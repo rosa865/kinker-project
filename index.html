@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kinker</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
 body{margin:0;background:#000;font-family:sans-serif;color:white;}
 .header{position:fixed;top:0;left:0;right:0;background:black;border-bottom:1px solid #222;padding:10px 15px;display:flex;justify-content:space-between;align-items:center;z-index:1000;}
@@ -570,6 +570,9 @@ ${top3Arr.join(" + ")}
 <hr>
 <p>제일 잘 맞는 유형은 "<strong>${strongText}</strong>" 입니다.</p>
 <p>안정적으로 어울리는 다른 유형은 "<strong>${stableText}</strong>" 입니다.</p>
+<button onclick="saveImage()" class="main">
+결과 이미지 저장
+</button>
 </div>
 `;
 
@@ -597,7 +600,15 @@ document.getElementById("resultScreen").classList.add("hidden");
 document.getElementById("testScreen").classList.add("hidden");
 document.getElementById("startScreen").classList.remove("hidden");
 }
-
+function saveImage(){
+  const target = document.getElementById("result");
+  html2canvas(target).then(canvas => {
+    const link = document.createElement("a");
+    link.download = "kinker_result.png";
+    link.href = canvas.toDataURL();
+    link.click();
+  });
+}
 </script>
 </body>
 </html>
