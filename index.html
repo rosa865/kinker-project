@@ -601,13 +601,25 @@ document.getElementById("testScreen").classList.add("hidden");
 document.getElementById("startScreen").classList.remove("hidden");
 }
 function saveImage(){
-  const target = document.getElementById("result");
-  html2canvas(target).then(canvas => {
-    const link = document.createElement("a");
-    link.download = "kinker_result.png";
-    link.href = canvas.toDataURL();
-    link.click();
-  });
+
+  const target = document.getElementById("resultScreen"); // 여기 변경
+
+  window.scrollTo(0, 0);
+
+  setTimeout(() => {
+    html2canvas(target, {
+      backgroundColor: "#000",
+      scrollY: -window.scrollY,
+      useCORS: true,
+      scale: 2
+    }).then(canvas => {
+      const link = document.createElement("a");
+      link.download = "kinker_result.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+  }, 500);
+}
 }
 </script>
 </body>
