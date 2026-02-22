@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kinker</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
 <style>
 body{margin:0;background:#000;font-family:sans-serif;color:white;}
 .header{position:fixed;top:0;left:0;right:0;background:black;border-bottom:1px solid #222;padding:10px 15px;display:flex;justify-content:space-between;align-items:center;z-index:1000;}
@@ -99,9 +99,6 @@ button.main{width:100%;padding:15px;margin-top:15px;background:linear-gradient(#
   display:flex;
   justify-content:space-between;
 }
-<h2 style="text-align:center; font-size:26px; color:#ff0055;">
-${typeName} 유형
-</h2>
 </style>
 </head>
 <body>
@@ -154,6 +151,7 @@ ${typeName} 유형
 <script>
 
 let roleType="";
+let myChart = null;
 let sections=["통제","고통","수치","굴복","훈육","페티시"];
 let categories={통제:0,고통:0,수치:0,굴복:0,훈육:0,페티시:0};
 
@@ -314,17 +312,6 @@ sub:{
 };
 /* ================= 8유형 ================= */
 
-const typeMap={
-"통제+고통+훈육":{dom:"교관",sub:"훈련생"},
-"통제+수치+훈육":{dom:"군주",sub:"시종"},
-"통제+수치+고통":{dom:"재판관",sub:"속죄자"},
-"통제+굴복+훈육":{dom:"인형사",sub:"인형"},
-"고통+수치+페티시":{dom:"심판자",sub:"순응자"},
-"수치+굴복+페티시":{dom:"연출가",sub:"전시물"},
-"굴복+훈육+페티시":{dom:"조련사",sub:"애완동물"},
-"고통+훈육+페티시":{dom:"연구자",sub:"실험체"}
-};
-
 const compatibility = {
 
   교관:{
@@ -467,45 +454,55 @@ categories[sections[sectionIndex]]+=parseInt(selected.innerText);
 
 
 
-/* ===== STEP 1 : 상위 3요소 조합 정렬 ===== */
+/* ===== 상대점수 기반 유형 계산 ===== */
 
-let sorted=Object.entries(categories)
-  .sort((a,b)=>b[1]-a[1]);
+// 1️⃣ 평균 계산
+let values = Object.values(categories);
+let mean = values.reduce((a,b)=>a+b,0) / values.length;
 
-let top3Arr=sorted.slice(0,3)
-  .map(x=>x[0])
-  .sort(); // 반드시 정렬
-
-let combination=top3Arr.join("+");
-
-let typeName=null;
-
-/* 조합 매칭 */
-Object.keys(typeMap).forEach(key=>{
-  let keySorted=key.split("+").sort().join("+");
-  if(keySorted===combination){
-    typeName=typeMap[key][roleType];
-  }
+// 2️⃣ relative 계산
+let relative = {};
+Object.keys(categories).forEach(key=>{
+  relative[key] = categories[key] - mean;
 });
 
-/* 매칭 실패 시 가장 높은 요소 기준으로 보정 */
-if(!typeName){
-  let primary=sorted[0][0];
+// 3️⃣ 1차 분기
+let domBase = relative["통제"] + relative["훈육"];
+let fetishBase = relative["페티시"] + relative["고통"];
 
-  const fallbackMap={
-    통제:{dom:"군주",sub:"시종"},
-    고통:{dom:"심판자",sub:"순응자"},
-    수치:{dom:"재판관",sub:"속죄자"},
-    굴복:{dom:"인형사",sub:"인형"},
-    훈육:{dom:"조련사",sub:"애완동물"},
-    페티시:{dom:"연출가",sub:"전시물"}
-  };
+let typeScores = {};
 
-  typeName=fallbackMap[primary][roleType];
+if(domBase >= fetishBase){
+
+  if(roleType==="dom"){
+    typeScores["교관"] = relative["통제"] + relative["고통"] + relative["훈육"];
+    typeScores["군주"] = relative["통제"] + relative["수치"] + relative["훈육"];
+    typeScores["재판관"] = relative["통제"] + relative["수치"] + relative["고통"];
+    typeScores["인형사"] = relative["통제"] + relative["굴복"] + relative["훈육"];
+  }else{
+    typeScores["훈련생"] = relative["통제"] + relative["고통"] + relative["훈육"];
+    typeScores["시종"] = relative["통제"] + relative["수치"] + relative["훈육"];
+    typeScores["속죄자"] = relative["통제"] + relative["수치"] + relative["고통"];
+    typeScores["인형"] = relative["통제"] + relative["굴복"] + relative["훈육"];
+  }
+
+}else{
+
+  if(roleType==="dom"){
+    typeScores["심판자"] = relative["고통"] + relative["수치"] + relative["페티시"];
+    typeScores["연출가"] = relative["수치"] + relative["굴복"] + relative["페티시"];
+    typeScores["조련사"] = relative["굴복"] + relative["훈육"] + relative["페티시"];
+    typeScores["연구자"] = relative["고통"] + relative["훈육"] + relative["페티시"];
+  }else{
+    typeScores["순응자"] = relative["고통"] + relative["수치"] + relative["페티시"];
+    typeScores["전시물"] = relative["수치"] + relative["굴복"] + relative["페티시"];
+    typeScores["애완동물"] = relative["굴복"] + relative["훈육"] + relative["페티시"];
+    typeScores["실험체"] = relative["고통"] + relative["훈육"] + relative["페티시"];
+  }
 }
-if(!typeName){
-  typeName = sorted[0][0] + "형";
-}
+
+let typeName = Object.entries(typeScores)
+  .sort((a,b)=>b[1]-a[1])[0][0];
 let structure=(categories["통제"]+categories["훈육"])/2;
 let sensory=(categories["고통"]+categories["페티시"])/2;
 let emotional=(categories["수치"]+categories["굴복"])/2;
@@ -545,7 +542,11 @@ ${typeName} 유형
 </h2>
 
 <h3 style="text-align:center; font-weight:normal; opacity:0.8; margin-top:0;">
-${top3Arr.join(" + ")}
+${Object.entries(categories)
+   .sort((a,b)=>b[1]-a[1])
+   .slice(0,3)
+   .map(x=>x[0])
+   .join(" + ")}
 </h3>
 
 <div class="chartWrapper">
@@ -570,13 +571,12 @@ ${top3Arr.join(" + ")}
 <hr>
 <p>제일 잘 맞는 유형은 "<strong>${strongText}</strong>" 입니다.</p>
 <p>안정적으로 어울리는 다른 유형은 "<strong>${stableText}</strong>" 입니다.</p>
-<button onclick="saveImage()" class="main">
-결과 이미지 저장
-</button>
 </div>
 `;
-
-new Chart(document.getElementById("radarChart"),{
+if(myChart){
+  myChart.destroy();
+}
+myChart = new Chart(document.getElementById("radarChart"),{
 type:'radar',
 data:{
 labels:sections,
@@ -600,19 +600,7 @@ document.getElementById("resultScreen").classList.add("hidden");
 document.getElementById("testScreen").classList.add("hidden");
 document.getElementById("startScreen").classList.remove("hidden");
 }
-function saveImage(){
-  const target = document.getElementById("result");
 
-  html2canvas(target, {
-    backgroundColor: "#000",
-    scale: 2
-  }).then(canvas => {
-    const link = document.createElement("a");
-    link.download = "kinker_result.png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-  });
-}
 </script>
 </body>
 </html>
