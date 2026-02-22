@@ -421,9 +421,9 @@ container.innerHTML+=`
 <div class="questionCard">
 <div>${qNum}. ${text}</div>
 <div class="optionWrap">
-  ${[1,2,3,4,5].map(v=>
-    `<span class="option" onclick="selectOption(this)">${v}</span>`
-  ).join("")}
+${["매우 아니다","아니다","보통","그렇다","매우 그렇다"].map((label,i)=>
+  `<span class="option" data-value="${i+1}" onclick="selectOption(this)">${label}</span>`
+).join("")}
 </div>
 </div>`;
 qNum++;
@@ -448,7 +448,7 @@ cards.forEach((card,index)=>{
 let selected=card.querySelector(".selected");
 if(selected){
 let sectionIndex=Math.floor(index/10);
-categories[sections[sectionIndex]]+=parseInt(selected.innerText);
+categories[sections[sectionIndex]]+=parseInt(selected.dataset.value);
 }
 });
 
