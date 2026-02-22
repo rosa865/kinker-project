@@ -15,12 +15,39 @@ body{margin:0;background:#000;font-family:sans-serif;color:white;}
 .container{max-width:700px;margin:auto;padding:90px 20px 40px 20px;}
 button.main{width:100%;padding:15px;margin-top:15px;background:linear-gradient(#444,#222);color:white;border:none;border-radius:10px;}
 .questionCard{border:1px solid #ff8800;border-radius:15px;padding:15px;margin-bottom:15px;}
-.option{display:inline-block;width:36px;height:36px;line-height:36px;border-radius:50%;background:#aa6600;text-align:center;margin:4px;cursor:pointer;}
-.option.selected{background:white;color:black;}
 .hidden{display:none;}
 .chartWrapper{position:relative;width:320px;margin:20px auto;}
 .centerText{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:20px;font-weight:bold;}
 .resultBox{margin-top:20px;line-height:1.8;}
+.option{
+  width:55px;
+  height:55px;
+  border-radius:50%;
+  background:#aa6600;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-size:11px;
+  font-weight:bold;
+  line-height:1.15;
+  text-align:center;
+  padding:4px;
+
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.option.selected{
+  background:white;
+  color:black;
+  transform:scale(1.08);
+}
+
+.option:active{
+  transform:scale(0.95);
+}
 .optionWrap{
   display:flex;
   justify-content:space-between;
@@ -421,7 +448,13 @@ container.innerHTML+=`
 <div class="questionCard">
 <div>${qNum}. ${text}</div>
 <div class="optionWrap">
-${["매우 아니다","아니다","보통","그렇다","매우 그렇다"].map((label,i)=>
+${[
+  "매우<br>아니다",
+  "아니다",
+  "보통",
+  "그렇다",
+  "매우<br>그렇다"
+].map((label,i)=>
   `<span class="option" data-value="${i+1}" onclick="selectOption(this)">${label}</span>`
 ).join("")}
 </div>
